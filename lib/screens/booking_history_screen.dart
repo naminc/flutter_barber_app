@@ -71,7 +71,7 @@ class BookingHistoryScreen extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
-                                    EditBookingScreen(), // trang chỉnh sửa bạn có rồi
+                                    EditBookingScreen(),
                               ),
                             );
                           } else if (value == 'cancel') {

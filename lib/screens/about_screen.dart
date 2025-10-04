@@ -26,7 +26,6 @@ class AboutScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // ==== Logo App ====
             CircleAvatar(
               radius: 50,
               backgroundColor: mainColor.withOpacity(0.1),
@@ -40,7 +39,6 @@ class AboutScreen extends StatelessWidget {
             const Text("Phiên bản 1.0.0", style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 20),
 
-            // ==== Mô tả ====
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -65,7 +63,6 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // ==== Liên hệ ====
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -79,7 +76,6 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Email
             Container(
               margin: const EdgeInsets.symmetric(vertical: 6),
               padding: const EdgeInsets.all(14),
@@ -111,7 +107,6 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
 
-            // Phone
             Container(
               margin: const EdgeInsets.symmetric(vertical: 6),
               padding: const EdgeInsets.all(14),
@@ -135,7 +130,7 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(width: 16),
                   const Expanded(
                     child: Text(
-                      "Hotline: 0901 234 567",
+                      "Hotline: 0347 101 143",
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
@@ -198,7 +193,7 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(width: 16),
                   const Expanded(
                     child: Text(
-                      "123 Dien Bien Phu, Thu Duc, HCM",
+                      "30 Linh Dong, Thu Duc, HCMC",
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
@@ -207,7 +202,6 @@ class AboutScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
             SizedBox(
               width: double.infinity,
               height: 50,

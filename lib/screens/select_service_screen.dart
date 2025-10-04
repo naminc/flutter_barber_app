@@ -2,38 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taobook/screens/select_barber_screen.dart';
 
 class SelectServiceScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> services = [
-    {
-      'id': 1,
-      'name': 'Cắt tóc nam',
-      'price': 100000,
-      'image': 'assets/images/services/1.jpg',
-    },
-    {
-      'id': 2,
-      'name': 'Cạo mặt',
-      'price': 50000,
-      'image': 'assets/images/services/1.jpg',
-    },
-    {
-      'id': 3,
-      'name': 'Gội đầu thư giãn',
-      'price': 80000,
-      'image': 'assets/images/services/1.jpg',
-    },
-    {
-      'id': 4,
-      'name': 'Nhuộm tóc',
-      'price': 200000,
-      'image': 'assets/images/services/1.jpg',
-    },
-    {
-      'id': 5,
-      'name': 'Massage mặt',
-      'price': 150000,
-      'image': 'assets/images/services/1.jpg',
-    },
-  ];
+  const SelectServiceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -62,110 +31,485 @@ class SelectServiceScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // List dịch vụ
-          ...services.map((service) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+          // ===== Service 1 =====
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
                   ),
-                ],
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {},
-                child: Row(
-                  children: [
-                    // Hình ảnh dịch vụ
-                    ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        bottomLeft: Radius.circular(16),
-                      ),
-                      child: Image.asset(
-                        service['image'],
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Thông tin
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              service['name'],
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: mainColor,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              "${service['price']} VND",
-                              style: TextStyle(
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: const [
-                                Icon(Icons.star, color: Colors.amber, size: 16),
-                                Icon(Icons.star, color: Colors.amber, size: 16),
-                                Icon(Icons.star, color: Colors.amber, size: 16),
-                                Icon(
-                                  Icons.star_half,
-                                  color: Colors.amber,
-                                  size: 16,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Nút đặt
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: mainColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'assets/images/services/1.jpg',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Cắt tóc nam",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange,
                           ),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  SelectBarberScreen(service: service),
-                            ),
-                          );
-                        },
-                        child: const Text("Đặt ngay"),
+                        SizedBox(height: 6),
+                        Text(
+                          "100.000 VND",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star_half, color: Colors.amber, size: 16),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ],
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SelectBarberScreen(
+                            service: {
+                              'id': 1,
+                              'name': 'Cắt tóc nam',
+                              'price': 100000,
+                              'image': 'assets/images/services/1.jpg',
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text("Đặt ngay"),
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              ],
+            ),
+          ),
+
+          // ===== Service 2 =====
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                  child: Image.asset(
+                    'assets/images/services/1.jpg',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Cạo mặt",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "50.000 VND",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star_half, color: Colors.amber, size: 16),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SelectBarberScreen(
+                            service: {
+                              'id': 2,
+                              'name': 'Cạo mặt',
+                              'price': 50000,
+                              'image': 'assets/images/services/1.jpg',
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text("Đặt ngay"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ===== Service 3 =====
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                  child: Image.asset(
+                    'assets/images/services/1.jpg',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Gội đầu thư giãn",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "80.000 VND",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star_half, color: Colors.amber, size: 16),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SelectBarberScreen(
+                            service: {
+                              'id': 3,
+                              'name': 'Gội đầu thư giãn',
+                              'price': 80000,
+                              'image': 'assets/images/services/1.jpg',
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text("Đặt ngay"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ===== Service 4 =====
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                  child: Image.asset(
+                    'assets/images/services/1.jpg',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Nhuộm tóc",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "200.000 VND",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star_half, color: Colors.amber, size: 16),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SelectBarberScreen(
+                            service: {
+                              'id': 4,
+                              'name': 'Nhuộm tóc',
+                              'price': 200000,
+                              'image': 'assets/images/services/1.jpg',
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text("Đặt ngay"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ===== Service 5 =====
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                  child: Image.asset(
+                    'assets/images/services/1.jpg',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Massage mặt",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "150.000 VND",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            Icon(Icons.star_half, color: Colors.amber, size: 16),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SelectBarberScreen(
+                            service: {
+                              'id': 5,
+                              'name': 'Massage mặt',
+                              'price': 150000,
+                              'image': 'assets/images/services/1.jpg',
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text("Đặt ngay"),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

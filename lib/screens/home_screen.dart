@@ -88,7 +88,7 @@ class HomeScreen extends StatelessWidget {
                             left: 16,
                             bottom: 16,
                             child: Text(
-                              "Khuyến mãi hôm nay ✨",
+                              "Chào mừng quý khách ✨",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -104,7 +104,6 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // ==== Next Booking Card ====
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
@@ -158,7 +157,6 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ==== Featured Services ====
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -282,7 +280,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Service 4
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
@@ -325,7 +322,6 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // ==== Quick Actions ====
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -338,7 +334,6 @@ class HomeScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                // ==== Đặt lịch ====
                 InkWell(
                   onTap: () {
                     Navigator.push(
@@ -364,7 +359,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                // ==== Lịch sử ====
                 InkWell(
                   onTap: () {
                     Navigator.push(
@@ -390,7 +384,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                // ==== Tài khoản ====
                 InkWell(
                   onTap: () {
                     Navigator.push(

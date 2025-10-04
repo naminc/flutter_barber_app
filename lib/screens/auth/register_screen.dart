@@ -18,48 +18,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool agreeTerms = false;
 
   void register() {
-    String name = nameController.text.trim();
-    String email = emailController.text.trim();
-    String password = passwordController.text;
-    String confirmPassword = confirmPasswordController.text;
-
-    if (name.isEmpty ||
-        email.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')));
-      return;
-    }
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Mật khẩu xác nhận không khớp')));
-      return;
-    }
-    bool isValidEmail = RegExp(
-      r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$",
-    ).hasMatch(email);
-    if (!isValidEmail) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Email không đúng định dạng')));
-      return;
-    }
-
-    if (!agreeTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Bạn cần đồng ý với Điều khoản & Điều kiện')),
-      );
-      return;
-    }
-
-    // Giả lập đăng ký thành công
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Đăng ký thành công!')));
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => MainScreen()),
@@ -139,8 +97,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               SizedBox(height: 16),
-
-              // Mật khẩu
               TextField(
                 controller: passwordController,
                 obscureText: true,
@@ -161,7 +117,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               SizedBox(height: 16),
 
-              // Xác nhận mật khẩu
               TextField(
                 controller: confirmPasswordController,
                 obscureText: true,

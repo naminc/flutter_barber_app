@@ -163,10 +163,10 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 3, // 3 cột đều nhau
+              crossAxisCount: 3,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: 2.5, // tỷ lệ ngang/dọc
+              childAspectRatio: 2.5,
               children: timeSlots.map((time) {
                 final isSelected = time == selectedTime;
                 return GestureDetector(

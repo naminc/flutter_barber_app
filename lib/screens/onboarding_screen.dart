@@ -87,7 +87,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
 
-                    // ==== Slide 2 ====
                     Padding(
                       padding: const EdgeInsets.all(32),
                       child: Column(
@@ -166,7 +165,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
-              // ==== Indicator ====
               SmoothPageIndicator(
                 controller: _pageController,
                 count: 3,
@@ -180,7 +178,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 30),
 
-              // ==== Button ====
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,

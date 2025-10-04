@@ -92,7 +92,6 @@ class BookingConfirmScreen extends StatelessWidget {
               ),
             ),
 
-            // Thợ
             Container(
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),

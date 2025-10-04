@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taobook/screens/home_screen.dart';
-import 'select_service_screen.dart';
-import 'account_screen.dart';
+import 'package:taobook/screens/select_service_screen.dart';
+import 'package:taobook/screens/account_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -13,33 +13,29 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    HomeScreen(),
-    SelectServiceScreen(),
-    AccountScreen(),
-  ];
-
-  final List<String> _titles = [
-    'Trang chủ',
-    'Chọn dịch vụ',
-    'Thông tin tài khoản',
-  ];
-
   @override
   Widget build(BuildContext context) {
     final mainColor = Colors.deepOrange.shade700;
+
+    String title = "Trang chủ";
+    if (_currentIndex == 1) title = "Chọn dịch vụ";
+    if (_currentIndex == 2) title = "Thông tin tài khoản";
+
+    Widget body = const HomeScreen();
+    if (_currentIndex == 1) body = SelectServiceScreen();
+    if (_currentIndex == 2) body = const AccountScreen();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_currentIndex]),
-        titleTextStyle: TextStyle(
+        title: Text(title),
+        titleTextStyle: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
-        
         backgroundColor: mainColor,
       ),
-      body: _screens[_currentIndex],
+      body: body,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,

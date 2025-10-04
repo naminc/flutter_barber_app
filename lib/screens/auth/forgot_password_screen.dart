@@ -44,7 +44,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               SizedBox(height: 32),
-              // Nhập email
               TextField(
                 style: TextStyle(color: mainColor),
                 decoration: InputDecoration(
@@ -76,8 +75,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               SizedBox(height: 12),
-
-              // Quay lại login
               TextButton(
                 onPressed: () {
                   Navigator.pushReplacement(
