@@ -63,8 +63,8 @@ class HomeScreen extends StatelessWidget {
               items:
                   [
                     'assets/images/banner2.jpg',
-                    'assets/images/banner2.jpg',
-                    'assets/images/banner2.jpg',
+                    'assets/images/banner3.jpg',
+                    'assets/images/banner1.jpg',
                   ].map((img) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(16),

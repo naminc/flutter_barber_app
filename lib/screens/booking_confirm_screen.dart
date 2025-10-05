@@ -39,7 +39,6 @@ class BookingConfirmScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Dịch vụ
             Container(
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),
@@ -153,7 +152,6 @@ class BookingConfirmScreen extends StatelessWidget {
               ),
             ),
 
-            // Thời gian
             Container(
               margin: const EdgeInsets.only(bottom: 30),
               padding: const EdgeInsets.all(16),
@@ -211,7 +209,7 @@ class BookingConfirmScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        "✅ Đặt lịch thành công!\n${service['name']} với ${barber['name']} vào $time, ${DateFormat('dd/MM/yyyy').format(date)}",
+                        "Đặt lịch thành công!",
                       ),
                     ),
                   );

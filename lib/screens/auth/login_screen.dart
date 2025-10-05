@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taobook/screens/auth/forgot_password_screen.dart';
 import 'package:taobook/screens/main_screen.dart';
 import 'package:taobook/screens/auth/register_screen.dart';
@@ -10,13 +13,68 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
+  final phoneController = TextEditingController();
   final passwordController = TextEditingController();
+  bool isLoading = false;
 
-  void login() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MainScreen()),
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  Future<void> checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user');
+    if (userJson != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainScreen()),
+      );
+    }
+  }
+
+  Future<void> login() async {
+    final phone = phoneController.text.trim();
+    final password = passwordController.text.trim();
+    if (phone.isEmpty || password.isEmpty) {
+      showSnack('Số điện thoại và mật khẩu không được để trống');
+      return;
+    }
+    setState(() => isLoading = true);
+    try {
+      final url = Uri.parse('https://nidez.net/api/auth/login.php');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone, 'password': password}),
+      );
+      final data = jsonDecode(response.body);
+
+      if (data['success'] == true) {
+        showSnack(data['message'], success: true);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user', jsonEncode(data['user']));
+        await prefs.setString('token', data['user']['token']);
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainScreen()),
+          );
+        }
+      } else {
+        showSnack(data['message']);
+      }
+    } catch (e) {
+      showSnack('Lỗi kết nối đến máy chủ');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void showSnack(String msg, {bool success = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
     );
   }
 
@@ -53,12 +111,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 32),
+
               TextField(
+                controller: phoneController,
                 style: TextStyle(color: mainColor),
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Số điện thoại',
                   labelStyle: TextStyle(color: mainColor),
-                  prefixIcon: Icon(Icons.email, color: mainColor),
+                  prefixIcon: Icon(Icons.phone, color: mainColor),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: mainColor),
@@ -69,8 +129,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
+
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 style: TextStyle(color: mainColor),
                 decoration: InputDecoration(
@@ -87,11 +150,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 24),
+
               ElevatedButton.icon(
-                onPressed: login,
-                icon: const Icon(Icons.login),
-                label: const Text('Đăng nhập', style: TextStyle(fontSize: 16)),
+                onPressed: isLoading ? null : login,
+                icon: isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.login),
+                label: Text(
+                  isLoading ? 'Đang xử lý...' : 'Đăng nhập',
+                  style: const TextStyle(fontSize: 16),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainColor,
                   foregroundColor: Colors.white,
@@ -103,6 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 20),
+
               Row(
                 children: [
                   Expanded(child: Divider(thickness: 1, color: mainColor)),
@@ -125,29 +203,23 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () {},
-                    child: CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.grey.shade200,
-                      child: const FaIcon(
-                        FontAwesomeIcons.google,
-                        color: Colors.red,
-                        size: 22,
-                      ),
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.grey.shade200,
+                    child: const FaIcon(
+                      FontAwesomeIcons.google,
+                      color: Colors.red,
+                      size: 22,
                     ),
                   ),
                   const SizedBox(width: 20),
-                  GestureDetector(
-                    onTap: () {},
-                    child: CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.grey.shade200,
-                      child: const FaIcon(
-                        FontAwesomeIcons.facebookF,
-                        color: Colors.blue,
-                        size: 22,
-                      ),
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.grey.shade200,
+                    child: const FaIcon(
+                      FontAwesomeIcons.facebookF,
+                      color: Colors.blue,
+                      size: 22,
                     ),
                   ),
                 ],
@@ -159,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                    MaterialPageRoute(builder: (_) => RegisterScreen()),
                   );
                 },
                 child: Text(
@@ -171,9 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => ForgotPasswordScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => ForgotPasswordScreen()),
                   );
                 },
                 child: Text(

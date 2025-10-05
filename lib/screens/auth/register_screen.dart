@@ -1,6 +1,8 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-
 import '../main_screen.dart';
 import 'login_screen.dart';
 
@@ -10,17 +12,73 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
+  final fulllnameController = TextEditingController();
+  final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
   bool agreeTerms = false;
+  bool isLoading = false;
 
-  void register() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MainScreen()),
+  Future<void> register() async {
+    final fullname = fulllnameController.text.trim();
+    final phone = phoneController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (fullname.isEmpty ||
+        phone.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      showSnack('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+    if (password != confirmPassword) {
+      showSnack('Mật khẩu xác nhận không khớp');
+      return;
+    }
+    if (!agreeTerms) {
+      showSnack('Bạn cần đồng ý với Điều khoản & Điều kiện');
+      return;
+    }
+    setState(() => isLoading = true);
+    try {
+      final url = Uri.parse('https://nidez.net/api/auth/register.php');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'fullname': fullname,
+          'phone': phone,
+          'password': password,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        showSnack(data['message'], success: true);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user', jsonEncode(data['user']));
+        await prefs.setString('token', data['user']['token']);
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => MainScreen()),
+          );
+        }
+      } else {
+        showSnack(data['message'] ?? 'Đăng ký thất bại');
+      }
+    } catch (e) {
+      showSnack('Lỗi kết nối đến máy chủ: $e');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void showSnack(String msg, {bool success = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
     );
   }
 
@@ -32,12 +90,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Icon(Icons.person_add, size: 80, color: mainColor),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 'Tạo tài khoản mới',
                 textAlign: TextAlign.center,
@@ -47,115 +105,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   color: mainColor,
                 ),
               ),
-              Text(
-                'Vui lòng điền thông tin để đăng ký!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
-                  color: mainColor,
-                ),
-              ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
 
               // Họ tên
               TextField(
-                controller: nameController,
+                controller: fulllnameController,
                 style: TextStyle(color: mainColor),
-                decoration: InputDecoration(
-                  labelText: 'Họ và tên',
-                  labelStyle: TextStyle(color: mainColor),
-                  prefixIcon: Icon(Icons.person, color: mainColor),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor, width: 2),
-                  ),
+                decoration: _inputDecoration(
+                  mainColor,
+                  'Họ và tên',
+                  Icons.person,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Email
+              // Số điện thoại
               TextField(
-                controller: emailController,
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
                 style: TextStyle(color: mainColor),
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: mainColor),
-                  prefixIcon: Icon(Icons.email, color: mainColor),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor, width: 2),
-                  ),
+                decoration: _inputDecoration(
+                  mainColor,
+                  'Số điện thoại',
+                  Icons.phone,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+
+              // Mật khẩu
               TextField(
                 controller: passwordController,
                 obscureText: true,
                 style: TextStyle(color: mainColor),
-                decoration: InputDecoration(
-                  labelText: 'Mật khẩu',
-                  labelStyle: TextStyle(color: mainColor),
-                  prefixIcon: Icon(Icons.lock, color: mainColor),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor, width: 2),
-                  ),
-                ),
+                decoration: _inputDecoration(mainColor, 'Mật khẩu', Icons.lock),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
+              // Xác nhận mật khẩu
               TextField(
                 controller: confirmPasswordController,
                 obscureText: true,
                 style: TextStyle(color: mainColor),
-                decoration: InputDecoration(
-                  labelText: 'Xác nhận mật khẩu',
-                  labelStyle: TextStyle(color: mainColor),
-                  prefixIcon: Icon(Icons.lock_outline, color: mainColor),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: mainColor, width: 2),
-                  ),
+                decoration: _inputDecoration(
+                  mainColor,
+                  'Xác nhận mật khẩu',
+                  Icons.lock_outline,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               CheckboxListTile(
                 value: agreeTerms,
-                onChanged: (value) {
-                  setState(() {
-                    agreeTerms = value ?? false;
-                  });
-                },
+                onChanged: (value) =>
+                    setState(() => agreeTerms = value ?? false),
                 activeColor: mainColor,
                 controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.symmetric(horizontal: 1),
                 title: RichText(
                   text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 15,
-                      height: 1.4,
-                    ),
+                    style: const TextStyle(color: Colors.black87, fontSize: 15),
                     children: [
-                      TextSpan(text: "Tôi đồng ý với "),
+                      const TextSpan(text: "Tôi đồng ý với "),
                       TextSpan(
                         text: "Điều khoản & Điều kiện",
                         style: TextStyle(
@@ -168,15 +177,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             showDialog(
                               context: context,
                               builder: (ctx) => AlertDialog(
-                                title: Text("Điều khoản & Điều kiện"),
-                                content: SingleChildScrollView(
-                                  child: Text(
-                                    "Đây là nội dung điều khoản mẫu...\n\n"
-                                    "1. Bạn đồng ý sử dụng dịch vụ.\n"
-                                    "2. Không spam, không lạm dụng.\n"
-                                    "3. Chúng tôi tôn trọng quyền riêng tư...",
-                                    style: TextStyle(fontSize: 14, height: 1.5),
-                                  ),
+                                title: const Text("Điều khoản & Điều kiện"),
+                                content: const Text(
+                                  "Đây là điều khoản sử dụng dịch vụ của TaoBook...",
                                 ),
                                 actions: [
                                   TextButton(
@@ -195,28 +198,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Nút Đăng ký
               ElevatedButton.icon(
-                onPressed: register,
-                icon: Icon(Icons.app_registration),
-                label: Text('Đăng ký', style: TextStyle(fontSize: 16)),
+                onPressed: isLoading ? null : register,
+                icon: isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.app_registration),
+                label: Text(isLoading ? 'Đang xử lý...' : 'Đăng ký'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainColor,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
-              SizedBox(height: 12),
+
+              const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    MaterialPageRoute(builder: (_) => LoginScreen()),
                   );
                 },
                 child: Text(
@@ -227,6 +239,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(
+    Color mainColor,
+    String label,
+    IconData icon,
+  ) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: mainColor),
+      prefixIcon: Icon(icon, color: mainColor),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: mainColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: mainColor, width: 2),
       ),
     );
   }
