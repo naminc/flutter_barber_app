@@ -1,11 +1,46 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:taobook/screens/account_screen.dart';
 import 'package:taobook/screens/booking_history_screen.dart';
 import 'package:taobook/screens/select_service_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<dynamic> sliders = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadSliders();
+  }
+
+  Future<void> loadSliders() async {
+    try {
+      final res = await http.get(
+        Uri.parse("https://nidez.net/api/slider/get_slider.php"),
+      );
+      final data = jsonDecode(res.body);
+      if (data["success"] == true && data["data"] is List) {
+        setState(() {
+          sliders = data["data"];
+        });
+      }
+    } catch (e) {
+      debugPrint("Lỗi load slider: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,55 +87,65 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // ==== Banner Carousel ====
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 180,
-                autoPlay: true,
-                enlargeCenterPage: true,
-                viewportFraction: 0.9,
+            // Banner
+            if (isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(color: Colors.deepOrange),
+                ),
+              )
+            else if (sliders.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text("Không có banner nào được hiển thị"),
+                ),
+              )
+            else
+              CarouselSlider(
+                options: CarouselOptions(
+                  height: 180,
+                  autoPlay: true,
+                  enlargeCenterPage: true,
+                  viewportFraction: 0.9,
+                ),
+                items: sliders.map((item) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      children: [
+                        Image.network(
+                          item["image"],
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                        Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.black54, Colors.transparent],
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 16,
+                          bottom: 16,
+                          child: Text(
+                            item["title"] ?? "",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
-              items:
-                  [
-                    'assets/images/banner2.jpg',
-                    'assets/images/banner3.jpg',
-                    'assets/images/banner1.jpg',
-                  ].map((img) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Stack(
-                        children: [
-                          Image.asset(
-                            img,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                          Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.black54, Colors.transparent],
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                              ),
-                            ),
-                          ),
-                          const Positioned(
-                            left: 16,
-                            bottom: 16,
-                            child: Text(
-                              "Chào mừng quý khách ✨",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-            ),
 
             const SizedBox(height: 20),
 

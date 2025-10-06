@@ -40,7 +40,6 @@ class SelectBarberScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // ===== Barber 1 =====
             _buildBarberCard(
               context,
               name: "Anh Nam",
@@ -50,7 +49,6 @@ class SelectBarberScreen extends StatelessWidget {
               service: service,
             ),
 
-            // ===== Barber 2 =====
             _buildBarberCard(
               context,
               name: "Anh Hùng",
@@ -60,7 +58,6 @@ class SelectBarberScreen extends StatelessWidget {
               service: service,
             ),
 
-            // ===== Barber 3 =====
             _buildBarberCard(
               context,
               name: "Anh Tuấn",
