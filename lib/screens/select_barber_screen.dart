@@ -1,10 +1,48 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:taobook/screens/time_selection_screen.dart';
 
-class SelectBarberScreen extends StatelessWidget {
+class SelectBarberScreen extends StatefulWidget {
   final Map<String, dynamic> service;
 
   const SelectBarberScreen({super.key, required this.service});
+
+  @override
+  State<SelectBarberScreen> createState() => _SelectBarberScreenState();
+}
+
+class _SelectBarberScreenState extends State<SelectBarberScreen> {
+  List<dynamic> barbers = [];
+  bool isLoading = true;
+  bool hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadBarbers();
+  }
+
+  Future<void> loadBarbers() async {
+    try {
+      final response = await http.get(
+        Uri.parse("https://nidez.net/api/barbers/get_barbers.php"),
+      );
+      final data = jsonDecode(response.body);
+      if (data["success"] == true) {
+        setState(() {
+          barbers = data["data"];
+        });
+      } else {
+        setState(() => hasError = true);
+      }
+    } catch (e) {
+      debugPrint("❌ Lỗi tải thợ: $e");
+      setState(() => hasError = true);
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,212 +51,206 @@ class SelectBarberScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text("Chọn thợ cắt tóc"),
-        titleTextStyle: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
         backgroundColor: mainColor,
+        elevation: 0,
+        title: const Text(
+          "💈 Chọn thợ",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            Text(
-              "✂️ Chọn thợ cho dịch vụ: ${service['name']}",
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.deepOrange),
+            )
+          : hasError
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.redAccent,
+                    size: 60,
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Không thể tải danh sách thợ 😢",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        isLoading = true;
+                        hasError = false;
+                      });
+                      loadBarbers();
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("Thử lại"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: mainColor,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: loadBarbers,
+              color: mainColor,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: barbers.length,
+                itemBuilder: (context, index) {
+                  final barber = barbers[index];
+                  return _buildBarberCard(
+                    context,
+                    name: barber['name'],
+                    image: barber['image'],
+                    rating: double.tryParse(barber['rating'].toString()) ?? 0.0,
+                    description:
+                        barber['description'] ?? "Thợ cắt tóc chuyên nghiệp.",
+                    mainColor: mainColor,
+                    service: widget.service,
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 20),
-
-            _buildBarberCard(
-              context,
-              name: "Anh Nam",
-              image: "assets/images/barber/1.jpg",
-              rating: 4.8,
-              mainColor: mainColor,
-              service: service,
-            ),
-
-            _buildBarberCard(
-              context,
-              name: "Anh Hùng",
-              image: "assets/images/barber/1.jpg",
-              rating: 4.6,
-              mainColor: mainColor,
-              service: service,
-            ),
-
-            _buildBarberCard(
-              context,
-              name: "Anh Tuấn",
-              image: "assets/images/barber/1.jpg",
-              rating: 4.7,
-              mainColor: mainColor,
-              service: service,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
-  // === Widget Card của thợ ===
+  // === Card của từng thợ ===
   Widget _buildBarberCard(
     BuildContext context, {
     required String name,
     required String image,
     required double rating,
+    required String description,
     required Color mainColor,
     required Map<String, dynamic> service,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: CustomPaint(
-        painter: DashedBorderPainter(color: mainColor, radius: 18),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 6),
-              ),
-            ],
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      margin: const EdgeInsets.only(bottom: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 5),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(18),
+        ],
+      ),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Image.network(
+              image,
+              height: 190,
+              width: double.infinity,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stack) => Container(
+                height: 190,
+                color: Colors.grey.shade200,
+                child: const Icon(
+                  Icons.person_off,
+                  size: 60,
+                  color: Colors.grey,
                 ),
-                child: Image.asset(
-                  image,
-                  height: 180,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ).copyWith(bottom: 16),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: mainColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  description,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    5,
+                    (i) => Icon(
+                      i < rating.round()
+                          ? Icons.star
+                          : Icons.star_border_outlined,
+                      color: Colors.amber,
+                      size: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
                   width: double.infinity,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 20),
-                        const SizedBox(width: 4),
-                        Text(
-                          "$rating ⭐",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TimeSelectionScreen(
+                            service: service,
+                            barber: {
+                              'name': name,
+                              'image': image,
+                              'rating': rating,
+                            },
                           ),
                         ),
-                      ],
+                      );
+                    },
+                    icon: const Icon(Icons.check),
+                    label: const Text(
+                      "Chọn thợ này",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => TimeSelectionScreen(
-                                service: service,
-                                barber: {
-                                  'name': name,
-                                  'image': image,
-                                  'rating': rating,
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.check),
-                        label: const Text(
-                          "Chọn thợ này",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: mainColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: mainColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
-}
-
-class DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-
-  DashedBorderPainter({required this.color, this.radius = 12});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    const dashWidth = 6;
-    const dashSpace = 3;
-    final path = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(0, 0, size.width, size.height),
-          Radius.circular(radius),
-        ),
-      );
-
-    final metrics = path.computeMetrics();
-    for (final metric in metrics) {
-      double distance = 0.0;
-      while (distance < metric.length) {
-        final next = distance + dashWidth;
-        canvas.drawPath(metric.extractPath(distance, next), paint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

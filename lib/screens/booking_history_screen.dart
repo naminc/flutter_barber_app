@@ -1,13 +1,119 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taobook/screens/edit_booking_screen.dart';
 
-class BookingHistoryScreen extends StatelessWidget {
+class BookingHistoryScreen extends StatefulWidget {
   const BookingHistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final mainColor = Colors.deepOrange.shade700;
+  State<BookingHistoryScreen> createState() => _BookingHistoryScreenState();
+}
 
+class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
+  List<dynamic> bookings = [];
+  bool isLoading = true;
+  final mainColor = Colors.deepOrange.shade700;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchBookings();
+  }
+
+  /// ép kiểu an toàn
+  int asInt(dynamic v, {int fallback = 0}) {
+    if (v == null) return fallback;
+    if (v is int) return v;
+    final s = v.toString();
+    if (s.isEmpty || s == 'null') return fallback;
+    return int.tryParse(s) ?? fallback;
+  }
+
+  // 🟢 API: lấy danh sách lịch đặt của user
+  Future<void> fetchBookings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('user');
+      if (userJson == null) {
+        setState(() => isLoading = false);
+        return;
+      }
+
+      final user = jsonDecode(userJson);
+      final userId = user['id'];
+
+      final url = Uri.parse("https://nidez.net/api/bookings/get_bookings.php");
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'user_id': userId}),
+      );
+
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        setState(() => bookings = data['data']);
+      } else {
+        _showSnack(data['message'] ?? 'Không thể tải danh sách lịch');
+      }
+    } catch (e) {
+      _showSnack('Lỗi tải dữ liệu: $e');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // 🔴 API: Hủy lịch
+  Future<void> cancelBooking(int bookingId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('user');
+      if (userJson == null) return;
+      final user = jsonDecode(userJson);
+
+      final url = Uri.parse(
+        "https://nidez.net/api/bookings/cancel_booking.php",
+      );
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'booking_id': bookingId, 'user_id': user['id']}),
+      );
+
+      final data = jsonDecode(response.body);
+      _showSnack(data['message'] ?? 'Lỗi hủy lịch');
+
+      if (data['success'] == true) fetchBookings();
+    } catch (e) {
+      _showSnack('Lỗi kết nối đến máy chủ');
+    }
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      case 'done':
+        return Colors.grey;
+      default:
+        return Colors.blueGrey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -23,260 +129,204 @@ class BookingHistoryScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Booking 1
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.deepOrange),
+            )
+          : bookings.isEmpty
+          ? const Center(
+              child: Text(
+                "😕 Chưa có lịch đặt nào",
+                style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CircleAvatar(
-                        backgroundColor: Color(0xFFFFE0B2),
-                        child: Icon(Icons.cut, color: Colors.deepOrange),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          "Cắt tóc nam",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
-                          ),
-                        ),
-                      ),
-                      PopupMenuButton<String>(
-                        color: Colors.white,
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    EditBookingScreen(),
-                              ),
-                            );
-                          } else if (value == 'cancel') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("❌ Bạn đã hủy lịch"),
-                              ),
-                            );
-                          }
-                        },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(
-                            value: 'edit',
-                            child: Text("Chỉnh sửa"),
-                          ),
-                          PopupMenuItem(
-                            value: 'cancel',
-                            child: Text("Hủy lịch"),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: const [
-                      Icon(Icons.attach_money, color: Colors.green, size: 18),
-                      SizedBox(width: 6),
-                      Text("100.000 VND"),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: const [
-                      Icon(Icons.calendar_month, color: Colors.blue, size: 18),
-                      SizedBox(width: 6),
-                      Text("03/10/2025 - 10:30 AM"),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.person, color: Colors.purple, size: 18),
-                      const SizedBox(width: 6),
-                      const Expanded(child: Text("Nam - 0901234567")),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: Image.asset(
-                          "assets/images/services/1.jpg",
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.green),
-                    ),
-                    child: const Text(
-                      "Đã xác nhận",
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            )
+          : RefreshIndicator(
+              color: mainColor,
+              onRefresh: fetchBookings,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: bookings.length,
+                itemBuilder: (context, index) {
+                  final b = bookings[index];
+                  final statusColor = _statusColor(b['status']);
 
-            // Booking 2
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CircleAvatar(
-                        backgroundColor: Color(0xFFE1BEE7),
-                        child: Icon(Icons.spa, color: Colors.deepOrange),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          "Gội đầu",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
-                          ),
-                        ),
-                      ),
-                      PopupMenuButton<String>(
-                        color: Colors.white,
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    EditBookingScreen(), // trang chỉnh sửa bạn có rồi
-                              ),
-                            );
-                          } else if (value == 'cancel') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("❌ Bạn đã hủy lịch"),
-                              ),
-                            );
-                          }
-                        },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(
-                            value: 'edit',
-                            child: Text("Chỉnh sửa"),
-                          ),
-                          PopupMenuItem(
-                            value: 'cancel',
-                            child: Text("Hủy lịch"),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: const [
-                      Icon(Icons.attach_money, color: Colors.green, size: 18),
-                      SizedBox(width: 6),
-                      Text("50.000 VND"),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: const [
-                      Icon(Icons.calendar_month, color: Colors.blue, size: 18),
-                      SizedBox(width: 6),
-                      Text("05/10/2025 - 3:00 PM"),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.person, color: Colors.purple, size: 18),
-                      const SizedBox(width: 6),
-                      const Expanded(child: Text("Hùng - 0987654321")),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: Image.asset(
-                          "assets/images/services/1.jpg",
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.orange),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    child: const Text(
-                      "Đang chờ",
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.orange.shade100,
+                              child: const Icon(
+                                Icons.cut,
+                                color: Colors.deepOrange,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                b['service_name'] ?? 'Dịch vụ',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: mainColor,
+                                ),
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              color: Colors.white,
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => EditBookingScreen(
+                                        bookingId: asInt(b['id']),
+                                        barberId: asInt(b['barber_id']),
+                                        serviceName: b['service_name'],
+                                        price: b['price'],
+                                        barberName: b['barber_name'],
+                                        barberImage: b['barber_image'],
+                                        oldDate: b['date'],
+                                        oldTime: b['time_slot'],
+                                      ),
+                                    ),
+                                  ).then((updated) {
+                                    if (updated == true) fetchBookings();
+                                  });
+                                } else if (value == 'cancel') {
+                                  cancelBooking(asInt(b['id']));
+                                }
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text("Chỉnh sửa"),
+                                ),
+                                PopupMenuItem(
+                                  value: 'cancel',
+                                  child: Text("Hủy lịch"),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Giá
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.attach_money,
+                              color: Colors.green,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text("${b['price']} VND"),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Ngày & Giờ
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_month,
+                              color: Colors.blue,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "${DateFormat('dd/MM/yyyy').format(DateTime.parse(b['date']))} - ${b['time_slot']}",
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Thợ cắt
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.person,
+                              color: Colors.purple,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(b['barber_name'] ?? 'Không rõ thợ'),
+                            ),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(30),
+                              child: Image.network(
+                                b['barber_image'] ?? '',
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 40,
+                                  height: 40,
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Trạng thái
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: statusColor),
+                            ),
+                            child: Text(
+                              b['status'] == 'pending'
+                                  ? "Đang chờ"
+                                  : b['status'] == 'confirmed'
+                                  ? "Đã xác nhận"
+                                  : b['status'] == 'done'
+                                  ? "Hoàn tất"
+                                  : "Đã hủy",
+                              style: TextStyle(
+                                color: statusColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

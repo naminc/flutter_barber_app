@@ -1,8 +1,42 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:taobook/screens/select_barber_screen.dart';
 
-class SelectServiceScreen extends StatelessWidget {
+class SelectServiceScreen extends StatefulWidget {
   const SelectServiceScreen({super.key});
+
+  @override
+  State<SelectServiceScreen> createState() => _SelectServiceScreenState();
+}
+
+class _SelectServiceScreenState extends State<SelectServiceScreen> {
+  List<dynamic> services = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadServices();
+  }
+
+  Future<void> loadServices() async {
+    try {
+      final response = await http.get(
+        Uri.parse("https://nidez.net/api/services/get_services.php"),
+      );
+      final data = jsonDecode(response.body);
+      if (data["success"] == true) {
+        setState(() {
+          services = data["data"];
+        });
+      }
+    } catch (e) {
+      debugPrint("Lỗi khi tải dịch vụ: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,528 +44,153 @@ class SelectServiceScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        onPressed: () => Navigator.pop(context),
-        backgroundColor: mainColor,
-        child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 70),
+        child: FloatingActionButton(
+          mini: true,
+          onPressed: () => Navigator.pop(context),
+          backgroundColor: mainColor,
+          child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SizedBox(height: 10),
-          const Text(
-            "💈 Chọn dịch vụ bạn muốn",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 20),
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.deepOrange),
+            )
+          : RefreshIndicator(
+              onRefresh: loadServices,
+              color: mainColor,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: services.length,
+                itemBuilder: (context, index) {
+                  final item = services[index];
+                  final rating =
+                      double.tryParse(item['rating'].toString()) ?? 0.0;
 
-          // ===== Service 1 =====
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                  child: Image.asset(
-                    'assets/images/services/cattoc.jpg',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Cắt tóc nam",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "100.000 VND",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(
-                              Icons.star_half,
-                              color: Colors.amber,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
+                  return GestureDetector(
+                    onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const SelectBarberScreen(
+                          builder: (_) => SelectBarberScreen(
                             service: {
-                              'id': 1,
-                              'name': 'Cắt tóc nam',
-                              'price': 100000,
-                              'image': 'assets/images/services/cattoc.jpg',
+                              'id': item['id'],
+                              'name': item['name'],
+                              'price': item['price'],
+                              'image': item['image'],
                             },
                           ),
                         ),
                       );
                     },
-                    child: const Text("Đặt ngay"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ===== Service 2 =====
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                  child: Image.asset(
-                    'assets/images/services/caomat.jpg',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Cạo mặt",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 6,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "50.000 VND",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(
-                              Icons.star_half,
-                              color: Colors.amber,
-                              size: 16,
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          // Ảnh dịch vụ
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              bottomLeft: Radius.circular(16),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              item['image'],
+                              width: 110,
+                              height: 110,
+                              fit: BoxFit.cover,
+                              errorBuilder: (c, e, s) => Container(
+                                width: 110,
+                                height: 110,
+                                color: Colors.grey.shade300,
+                                child: const Icon(Icons.image_not_supported),
+                              ),
+                            ),
+                          ),
+
+                          // Nội dung
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    item['name'],
+                                    style: TextStyle(
+                                      fontSize: 16.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: mainColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    item['description'] ??
+                                        "Dịch vụ chất lượng tại salon TaoBook",
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.black54,
+                                      fontSize: 13,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Giá + sao
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        item['price'].toString(),
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14.5,
+                                        ),
+                                      ),
+                                      Row(
+                                        children: List.generate(
+                                          5,
+                                          (i) => Icon(
+                                            i < rating.round()
+                                                ? Icons.star
+                                                : Icons.star_border,
+                                            color: Colors.orangeAccent,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SelectBarberScreen(
-                            service: {
-                              'id': 2,
-                              'name': 'Cạo mặt',
-                              'price': 50000,
-                              'image': 'assets/images/services/caomat.jpg',
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text("Đặt ngay"),
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
-          ),
-
-          // ===== Service 3 =====
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                  child: Image.asset(
-                    'assets/images/services/goidau.jpg',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Gội đầu thư giãn",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "80.000 VND",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(
-                              Icons.star_half,
-                              color: Colors.amber,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SelectBarberScreen(
-                            service: {
-                              'id': 3,
-                              'name': 'Gội đầu thư giãn',
-                              'price': 80000,
-                              'image': 'assets/images/services/goidau.jpg',
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text("Đặt ngay"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ===== Service 4 =====
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                  child: Image.asset(
-                    'assets/images/services/nhuomtoc.jpg',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Nhuộm tóc",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "200.000 VND",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(
-                              Icons.star_half,
-                              color: Colors.amber,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SelectBarberScreen(
-                            service: {
-                              'id': 4,
-                              'name': 'Nhuộm tóc',
-                              'price': 200000,
-                              'image': 'assets/images/services/nhuomtoc.jpg',
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text("Đặt ngay"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ===== Service 5 =====
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                  child: Image.asset(
-                    'assets/images/services/massagemat.jpg',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Massage mặt",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "150.000 VND",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(Icons.star, color: Colors.amber, size: 16),
-                            Icon(
-                              Icons.star_half,
-                              color: Colors.amber,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SelectBarberScreen(
-                            service: {
-                              'id': 5,
-                              'name': 'Massage mặt',
-                              'price': 150000,
-                              'image': 'assets/images/services/massagemat.jpg',
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text("Đặt ngay"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
