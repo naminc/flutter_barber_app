@@ -32,40 +32,48 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
     _loadTimeSlots();
   }
 
-  /// Gọi API lấy danh sách khung giờ
+  /// 🧩 Gọi API lấy danh sách khung giờ
   Future<void> _loadTimeSlots() async {
     setState(() {
       isLoading = true;
       selectedTime = null;
     });
 
+    // Ép kiểu barber_id an toàn
+    final barberId = int.tryParse("${widget.barber['id']}") ?? 0;
+    final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+    debugPrint("🧩 Gửi yêu cầu lấy khung giờ: barber_id=$barberId | date=$dateStr");
+
     try {
       final response = await http.post(
         Uri.parse("https://nidez.net/api/bookings/get_time_slots.php"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "barber_id": widget.barber['id'] ?? 1,
-          "date": DateFormat('yyyy-MM-dd').format(selectedDate),
+          "barber_id": barberId,
+          "date": dateStr,
         }),
       );
 
       final data = jsonDecode(response.body);
+      debugPrint("📦 Phản hồi API: ${response.body}");
+
       if (data["success"] == true) {
         setState(() {
           timeSlots = data["data"];
         });
       } else {
-        timeSlots = [];
+        setState(() => timeSlots = []);
       }
     } catch (e) {
-      debugPrint("Lỗi khi tải khung giờ: $e");
-      timeSlots = [];
+      debugPrint("❌ Lỗi khi tải khung giờ: $e");
+      setState(() => timeSlots = []);
     } finally {
       setState(() => isLoading = false);
     }
   }
 
-  /// Chọn ngày bằng DatePicker
+  /// 📅 Chọn ngày bằng DatePicker
   void _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -78,7 +86,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
       setState(() {
         selectedDate = picked;
       });
-      _loadTimeSlots(); // load lại khung giờ mới theo ngày chọn
+      _loadTimeSlots();
     }
   }
 
@@ -135,10 +143,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                               width: 70,
                               height: 70,
                               color: Colors.grey.shade300,
-                              child: const Icon(
-                                Icons.person,
-                                color: Colors.grey,
-                              ),
+                              child: const Icon(Icons.person, color: Colors.grey),
                             ),
                           ),
                         ),
@@ -189,10 +194,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                       TextButton.icon(
                         onPressed: () => _selectDate(context),
                         icon: const Icon(Icons.calendar_month, size: 18),
-                        label: Text(
-                          "Đổi ngày",
-                          style: TextStyle(color: mainColor),
-                        ),
+                        label: Text("Đổi ngày", style: TextStyle(color: mainColor)),
                       ),
                     ],
                   ),
@@ -207,9 +209,12 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                   // === Danh sách khung giờ ===
                   if (timeSlots.isEmpty)
                     const Center(
-                      child: Text(
-                        "Không có khung giờ nào khả dụng.",
-                        style: TextStyle(color: Colors.grey),
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                          "Không có khung giờ nào khả dụng.",
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ),
                     )
                   else
@@ -259,8 +264,8 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: available
                                     ? (isSelected
-                                          ? Colors.white
-                                          : Colors.black87)
+                                        ? Colors.white
+                                        : Colors.black87)
                                     : Colors.grey,
                               ),
                             ),

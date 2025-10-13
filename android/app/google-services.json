@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "210500312465",
+    "project_id": "barber-app-7b11c",
+    "storage_bucket": "barber-app-7b11c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210500312465:android:5759a361b1483ae3494e30",
+        "android_client_info": {
+          "package_name": "com.example.taobook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-YVTTBZZWEXGpr-V5G3YCIvt515tqrxQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

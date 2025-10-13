@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // 🟠 NEW
 import '../main_screen.dart';
 import 'login_screen.dart';
 
@@ -41,7 +42,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       showSnack('Bạn cần đồng ý với Điều khoản & Điều kiện');
       return;
     }
+
     setState(() => isLoading = true);
+
     try {
       final url = Uri.parse('https://nidez.net/api/auth/register.php');
       final response = await http.post(
@@ -57,9 +60,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final data = jsonDecode(response.body);
       if (data['success'] == true) {
         showSnack(data['message'], success: true);
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user', jsonEncode(data['user']));
         await prefs.setString('token', data['user']['token']);
+
+        // 🟠 NEW: Lấy FCM token và lưu lên server
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        debugPrint("🔑 FCM Token (register): $fcmToken");
+
+        if (fcmToken != null) {
+          final saveUrl =
+              Uri.parse('https://nidez.net/api/users/save_fcm_token.php');
+          final res = await http.post(
+            saveUrl,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'user_id': data['user']['id'],
+              'fcm_token': fcmToken,
+            }),
+          );
+          debugPrint("📨 Save FCM response: ${res.body}");
+        }
+
+        // 🟢 Chuyển sang màn hình chính
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
@@ -111,11 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextField(
                 controller: fulllnameController,
                 style: TextStyle(color: mainColor),
-                decoration: _inputDecoration(
-                  mainColor,
-                  'Họ và tên',
-                  Icons.person,
-                ),
+                decoration: _inputDecoration(mainColor, 'Họ và tên', Icons.person),
               ),
               const SizedBox(height: 16),
 
@@ -124,11 +144,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
                 style: TextStyle(color: mainColor),
-                decoration: _inputDecoration(
-                  mainColor,
-                  'Số điện thoại',
-                  Icons.phone,
-                ),
+                decoration:
+                    _inputDecoration(mainColor, 'Số điện thoại', Icons.phone),
               ),
               const SizedBox(height: 16),
 
@@ -147,17 +164,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: true,
                 style: TextStyle(color: mainColor),
                 decoration: _inputDecoration(
-                  mainColor,
-                  'Xác nhận mật khẩu',
-                  Icons.lock_outline,
-                ),
+                    mainColor, 'Xác nhận mật khẩu', Icons.lock_outline),
               ),
               const SizedBox(height: 10),
 
               CheckboxListTile(
                 value: agreeTerms,
-                onChanged: (value) =>
-                    setState(() => agreeTerms = value ?? false),
+                onChanged: (value) => setState(() => agreeTerms = value ?? false),
                 activeColor: mainColor,
                 controlAffinity: ListTileControlAffinity.leading,
                 title: RichText(
@@ -222,7 +235,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
@@ -244,10 +256,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   InputDecoration _inputDecoration(
-    Color mainColor,
-    String label,
-    IconData icon,
-  ) {
+      Color mainColor, String label, IconData icon) {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: mainColor),

@@ -97,7 +97,6 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Header banner ---
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -181,9 +180,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
               ),
             ),
 
-            const SizedBox(height: 40),
-
-            // --- Confirm button ---
+            const SizedBox(height: 5),
             _animatedCard(
               delay: 300,
               child: Container(
@@ -327,8 +324,6 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     alignment: Alignment.center,
     child: const Icon(Icons.person, color: Colors.grey),
   );
-
-  // --- Animation xuất hiện mượt ---
   Widget _animatedCard({required int delay, required Widget child}) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),

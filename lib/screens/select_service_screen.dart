@@ -27,6 +27,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
       );
       final data = jsonDecode(response.body);
       if (data["success"] == true) {
+        if (!mounted) return; // <--- kiểm tra trước khi setState
         setState(() {
           services = data["data"];
         });
@@ -34,6 +35,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
     } catch (e) {
       debugPrint("Lỗi khi tải dịch vụ: $e");
     } finally {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }

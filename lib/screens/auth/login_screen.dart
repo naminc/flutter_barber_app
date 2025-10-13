@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taobook/screens/auth/forgot_password_screen.dart';
 import 'package:taobook/screens/main_screen.dart';
 import 'package:taobook/screens/auth/register_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -56,6 +57,23 @@ class _LoginScreenState extends State<LoginScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user', jsonEncode(data['user']));
         await prefs.setString('token', data['user']['token']);
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        print("FCM Token: $fcmToken");
+
+        if (fcmToken != null) {
+          final saveUrl = Uri.parse(
+            'https://nidez.net/api/users/save_fcm_token.php',
+          );
+          final res = await http.post(
+            saveUrl,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'user_id': data['user']['id'],
+              'fcm_token': fcmToken,
+            }),
+          );
+          print("Server response: ${res.body}");
+        }
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
@@ -209,16 +227,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const FaIcon(
                       FontAwesomeIcons.google,
                       color: Colors.red,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: Colors.grey.shade200,
-                    child: const FaIcon(
-                      FontAwesomeIcons.facebookF,
-                      color: Colors.blue,
                       size: 22,
                     ),
                   ),

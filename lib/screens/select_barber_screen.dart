@@ -6,7 +6,10 @@ import 'package:taobook/screens/time_selection_screen.dart';
 class SelectBarberScreen extends StatefulWidget {
   final Map<String, dynamic> service;
 
-  const SelectBarberScreen({super.key, required this.service});
+  const SelectBarberScreen({
+    super.key,
+    required this.service,
+  });
 
   @override
   State<SelectBarberScreen> createState() => _SelectBarberScreenState();
@@ -15,30 +18,29 @@ class SelectBarberScreen extends StatefulWidget {
 class _SelectBarberScreenState extends State<SelectBarberScreen> {
   List<dynamic> barbers = [];
   bool isLoading = true;
-  bool hasError = false;
+
+  final mainColor = Colors.deepOrange;
 
   @override
   void initState() {
     super.initState();
-    loadBarbers();
+    _loadBarbers();
   }
 
-  Future<void> loadBarbers() async {
+  Future<void> _loadBarbers() async {
     try {
       final response = await http.get(
         Uri.parse("https://nidez.net/api/barbers/get_barbers.php"),
       );
       final data = jsonDecode(response.body);
+
       if (data["success"] == true) {
         setState(() {
           barbers = data["data"];
         });
-      } else {
-        setState(() => hasError = true);
       }
     } catch (e) {
-      debugPrint("❌ Lỗi tải thợ: $e");
-      setState(() => hasError = true);
+      debugPrint("Lỗi khi tải danh sách thợ: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -46,21 +48,16 @@ class _SelectBarberScreenState extends State<SelectBarberScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mainColor = Colors.deepOrange;
-
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        backgroundColor: mainColor,
-        elevation: 0,
-        title: const Text(
-          "💈 Chọn thợ",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        title: const Text("Chọn thợ cắt tóc"),
+        titleTextStyle: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
+        backgroundColor: mainColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -70,187 +67,114 @@ class _SelectBarberScreenState extends State<SelectBarberScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: Colors.deepOrange),
             )
-          : hasError
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.redAccent,
-                    size: 60,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Không thể tải danh sách thợ 😢",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        isLoading = true;
-                        hasError = false;
-                      });
-                      loadBarbers();
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text("Thử lại"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: mainColor,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: loadBarbers,
-              color: mainColor,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: barbers.length,
-                itemBuilder: (context, index) {
-                  final barber = barbers[index];
-                  return _buildBarberCard(
-                    context,
-                    name: barber['name'],
-                    image: barber['image'],
-                    rating: double.tryParse(barber['rating'].toString()) ?? 0.0,
-                    description:
-                        barber['description'] ?? "Thợ cắt tóc chuyên nghiệp.",
-                    mainColor: mainColor,
-                    service: widget.service,
-                  );
-                },
-              ),
-            ),
-    );
-  }
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: barbers.length,
+              itemBuilder: (context, index) {
+                final barber = barbers[index];
+                return GestureDetector(
+                  onTap: () {
+                    print("➡️ Chọn thợ: ${barber['name']} (id=${barber['id']})");
 
-  // === Card của từng thợ ===
-  Widget _buildBarberCard(
-    BuildContext context, {
-    required String name,
-    required String image,
-    required double rating,
-    required String description,
-    required Color mainColor,
-    required Map<String, dynamic> service,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-      margin: const EdgeInsets.only(bottom: 18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.network(
-              image,
-              height: 190,
-              width: double.infinity,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stack) => Container(
-                height: 190,
-                color: Colors.grey.shade200,
-                child: const Icon(
-                  Icons.person_off,
-                  size: 60,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ).copyWith(bottom: 16),
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: mainColor,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  description,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    5,
-                    (i) => Icon(
-                      i < rating.round()
-                          ? Icons.star
-                          : Icons.star_border_outlined,
-                      color: Colors.amber,
-                      size: 18,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TimeSelectionScreen(
+                          service: widget.service,
+                          barber: {
+                            "id": int.tryParse("${barber['id']}") ?? 0,
+                            "name": barber['name'] ?? '',
+                            "image": barber['image'] ?? '',
+                            "rating": barber['rating'] ?? '',
+                            "description": barber['description'] ?? '',
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 6,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TimeSelectionScreen(
-                            service: service,
-                            barber: {
-                              'name': name,
-                              'image': image,
-                              'rating': rating,
-                            },
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            bottomLeft: Radius.circular(16),
+                          ),
+                          child: Image.network(
+                            barber['image'] ?? '',
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                              width: 100,
+                              height: 100,
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.person, size: 40),
+                            ),
                           ),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.check),
-                    label: const Text(
-                      "Chọn thợ này",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: mainColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  barber['name'] ?? 'Không rõ tên',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: mainColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  barber['description'] ??
+                                      'Thợ cắt tóc chuyên nghiệp',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star,
+                                        size: 16, color: Colors.orangeAccent),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      barber['rating'].toString(),
+                                      style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.black87),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          ),
-        ],
-      ),
     );
   }
 }

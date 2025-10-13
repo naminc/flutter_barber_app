@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taobook/screens/about_screen.dart';
 import 'package:taobook/screens/auth/login_screen.dart';
@@ -23,7 +24,6 @@ class _AccountScreenState extends State<AccountScreen> {
     }
     return null;
   }
-
   @override
   Widget build(BuildContext context) {
     final mainColor = Colors.deepOrange;
@@ -51,11 +51,9 @@ class _AccountScreenState extends State<AccountScreen> {
                   child: CircularProgressIndicator(color: Colors.deepOrange),
                 );
               }
-
               final user = snapshot.data;
               final fullname = user?['fullname'] ?? 'Người dùng';
               final phone = user?['phone'] ?? 'Chưa có số điện thoại';
-
               return Container(
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(20),
@@ -93,13 +91,10 @@ class _AccountScreenState extends State<AccountScreen> {
               );
             },
           ),
-
-          // Danh sách các chức năng
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                // Chỉnh sửa thông tin
                 Card(
                   margin: const EdgeInsets.symmetric(vertical: 6),
                   shape: RoundedRectangleBorder(
@@ -125,8 +120,6 @@ class _AccountScreenState extends State<AccountScreen> {
                     },
                   ),
                 ),
-
-                // Lịch sử đặt lịch
                 Card(
                   margin: const EdgeInsets.symmetric(vertical: 6),
                   shape: RoundedRectangleBorder(
@@ -237,8 +230,27 @@ class _AccountScreenState extends State<AccountScreen> {
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                 onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
-                  await prefs.clear();
+                  final userJson = prefs.getString('user');
 
+                  if (userJson != null) {
+                    final user = jsonDecode(userJson);
+                    final userId = user['id'];
+
+                    try {
+                      final res = await http.post(
+                        Uri.parse(
+                          'https://nidez.net/api/users/remove_fcm_token.php',
+                        ),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode({'user_id': userId}),
+                      );
+
+                      debugPrint("🧹 Remove token response: ${res.body}");
+                    } catch (e) {
+                      debugPrint("⚠️ Lỗi khi xóa FCM token: $e");
+                    }
+                  }
+                  await prefs.clear();
                   if (!context.mounted) return;
                   Navigator.pushAndRemoveUntil(
                     context,
