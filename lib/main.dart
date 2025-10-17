@@ -6,13 +6,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taobook/screens/onboarding_screen.dart';
 import 'firebase_options.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  debugPrint("📩 [Background] ${message.notification?.title}");
+  debugPrint("[Background] ${message.notification?.title}");
 }
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -22,7 +20,7 @@ Future<void> main() async {
   await flutterLocalNotificationsPlugin.initialize(initSettings);
   await FirebaseMessaging.instance.requestPermission();
   final fcmToken = await FirebaseMessaging.instance.getToken();
-  debugPrint('🔥 FCM Token: $fcmToken');
+  debugPrint('FCM Token: $fcmToken');
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     final notification = message.notification;
     final android = message.notification?.android;
@@ -44,7 +42,7 @@ Future<void> main() async {
     }
   });
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    debugPrint('👆 [Click] ${message.notification?.title}');
+    debugPrint('[Click] ${message.notification?.title}');
   });
   runApp(const MyApp());
 }

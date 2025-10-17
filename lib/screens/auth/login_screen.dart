@@ -7,6 +7,7 @@ import 'package:taobook/screens/auth/forgot_password_screen.dart';
 import 'package:taobook/screens/main_screen.dart';
 import 'package:taobook/screens/auth/register_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -90,6 +91,69 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> loginWithGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final userData = {
+        'fullname': googleUser.displayName,
+        'email': googleUser.email,
+        'google_id': googleUser.id,
+        'provider': 'google',
+      };
+
+      final response = await http.post(
+        Uri.parse('https://nidez.net/api/auth/google_login.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(userData),
+      );
+
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user', jsonEncode(data['user']));
+        await prefs.setString('token', data['user']['token']);
+
+        // Lấy FCM token và gửi lên server
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        print("Google login FCM Token: $fcmToken");
+
+        if (fcmToken != null) {
+          final saveUrl = Uri.parse(
+            'https://nidez.net/api/users/save_fcm_token.php',
+          );
+          final res = await http.post(
+            saveUrl,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'user_id': data['user']['id'],
+              'fcm_token': fcmToken,
+            }),
+          );
+          print("Server FCM response: ${res.body}");
+        }
+
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => MainScreen()),
+          );
+        }
+      } else {
+        showSnack(data['message']);
+      }
+    } catch (e) {
+      showSnack('Không thể đăng nhập bằng Google.');
+    }
+  }
+
   void showSnack(String msg, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
@@ -99,7 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final mainColor = Colors.deepOrange.shade700;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -129,7 +192,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
               TextField(
                 controller: phoneController,
                 style: TextStyle(color: mainColor),
@@ -147,9 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
               TextField(
                 controller: passwordController,
                 obscureText: true,
@@ -168,9 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 24),
-
               ElevatedButton.icon(
                 onPressed: isLoading ? null : login,
                 icon: isLoading
@@ -196,9 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
               Row(
                 children: [
                   Expanded(child: Divider(thickness: 1, color: mainColor)),
@@ -215,26 +271,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   Expanded(child: Divider(thickness: 1, color: mainColor)),
                 ],
               ),
-
               const SizedBox(height: 16),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: Colors.grey.shade200,
-                    child: const FaIcon(
-                      FontAwesomeIcons.google,
-                      color: Colors.red,
-                      size: 22,
+                  GestureDetector(
+                    onTap: loginWithGoogle,
+                    child: CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.grey.shade200,
+                      child: const FaIcon(
+                        FontAwesomeIcons.google,
+                        color: Colors.red,
+                        size: 22,
+                      ),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               TextButton(
                 onPressed: () {
                   Navigator.pushReplacement(

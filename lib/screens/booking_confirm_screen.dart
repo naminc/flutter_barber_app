@@ -24,6 +24,7 @@ class BookingConfirmScreen extends StatefulWidget {
 
 class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
   bool isLoading = false;
+  final mainColor = Colors.deepOrange;
 
   Future<void> _createBooking() async {
     setState(() => isLoading = true);
@@ -37,7 +38,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
       }
 
       final user = jsonDecode(userJson);
-      final userId = user['id']; // ✅ Lấy user_id từ user đã đăng nhập
+      final userId = user['id'];
 
       final response = await http.post(
         Uri.parse('https://nidez.net/api/bookings/create_booking.php'),
@@ -52,7 +53,6 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
       );
 
       final data = jsonDecode(response.body);
-
       if (data['success'] == true) {
         showSnack(data['message'], success: true);
         Navigator.popUntil(context, (route) => route.isFirst);
@@ -68,14 +68,16 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
 
   void showSnack(String msg, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: success ? Colors.green : Colors.redAccent,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final mainColor = Colors.deepOrange;
-
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -97,65 +99,66 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [mainColor, Colors.orangeAccent],
-                ),
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: mainColor.withOpacity(0.4),
-                    blurRadius: 10,
-                    offset: const Offset(0, 6),
+            _animatedCard(
+              delay: 0,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [mainColor, Colors.orangeAccent],
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.event_available,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Xác nhận lịch hẹn ✨",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "Hãy kiểm tra lại thông tin trước khi hoàn tất",
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: mainColor.withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 6),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.event_available,
+                        color: Colors.white, size: 36),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Xác nhận lịch hẹn ✨",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "Hãy kiểm tra lại thông tin trước khi hoàn tất",
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 28),
 
+            // --- Thẻ thông tin ---
             _animatedCard(
-              delay: 0,
+              delay: 50,
               child: _infoCard(
                 icon: Icons.cut,
                 iconColor: mainColor,
                 title: "Dịch vụ",
                 name: widget.service['name'] ?? 'Không rõ',
-                detail: "${widget.service['price'] ?? 0} VND",
+                detail: "${widget.service['price'] ?? 0}",
               ),
             ),
             _animatedCard(
@@ -170,7 +173,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
               ),
             ),
             _animatedCard(
-              delay: 200,
+              delay: 150,
               child: _infoCard(
                 icon: Icons.calendar_month,
                 iconColor: Colors.blue,
@@ -180,9 +183,11 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
               ),
             ),
 
-            const SizedBox(height: 5),
+            const SizedBox(height: 20),
+
+            // --- Nút xác nhận ---
             _animatedCard(
-              delay: 300,
+              delay: 200,
               child: Container(
                 width: double.infinity,
                 height: 56,
@@ -296,21 +301,13 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
           if (image != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: image.startsWith('http')
-                  ? Image.network(
-                      image,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholderAvatar(),
-                    )
-                  : Image.asset(
-                      image,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholderAvatar(),
-                    ),
+              child: Image.network(
+                image,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholderAvatar(),
+              ),
             ),
         ],
       ),
@@ -318,21 +315,23 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
   }
 
   Widget _placeholderAvatar() => Container(
-    width: 60,
-    height: 60,
-    color: Colors.grey.shade200,
-    alignment: Alignment.center,
-    child: const Icon(Icons.person, color: Colors.grey),
-  );
+        width: 60,
+        height: 60,
+        color: Colors.grey.shade200,
+        alignment: Alignment.center,
+        child: const Icon(Icons.person, color: Colors.grey),
+      );
+
+  // --- Hiệu ứng nhanh hơn ---
   Widget _animatedCard({required int delay, required Widget child}) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 600 + delay),
+      duration: Duration(milliseconds: 250 + delay ~/ 2), // nhanh gấp đôi
       builder: (context, value, _) {
         return Opacity(
           opacity: value,
           child: Transform.translate(
-            offset: Offset(0, 30 * (1 - value)),
+            offset: Offset(0, 15 * (1 - value)), // nhẹ & mượt hơn
             child: child,
           ),
         );
