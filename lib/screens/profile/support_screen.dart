@@ -18,7 +18,6 @@ class _SupportScreenState extends State<SupportScreen> {
   bool isLoading = false;
   final mainColor = Colors.deepOrange.shade700;
 
-  // ===== HÀM GỬI YÊU CẦU HỖ TRỢ =====
   Future<void> sendSupport() async {
     final fullname = fullnameController.text.trim();
     final email = emailController.text.trim();
@@ -101,7 +100,7 @@ class _SupportScreenState extends State<SupportScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ==== Họ và tên ====
+            // Họ và tên
             TextFormField(
               controller: fullnameController,
               style: TextStyle(color: mainColor),
@@ -109,7 +108,7 @@ class _SupportScreenState extends State<SupportScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ==== Email ====
+            // Email
             TextFormField(
               controller: emailController,
               style: TextStyle(color: mainColor),
@@ -117,7 +116,7 @@ class _SupportScreenState extends State<SupportScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ==== Số điện thoại ====
+            // Số điện thoại
             TextFormField(
               controller: phoneController,
               keyboardType: TextInputType.phone,
@@ -126,7 +125,7 @@ class _SupportScreenState extends State<SupportScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ==== Nội dung ====
+            // Nội dung
             TextFormField(
               controller: messageController,
               style: TextStyle(color: mainColor),
@@ -150,7 +149,7 @@ class _SupportScreenState extends State<SupportScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ==== Nút gửi ====
+            // Nút gửi
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -185,7 +184,6 @@ class _SupportScreenState extends State<SupportScreen> {
     );
   }
 
-  // ===== Widget Input Decoration dùng chung =====
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,

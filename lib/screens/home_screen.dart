@@ -4,7 +4,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:taobook/screens/account_screen.dart';
 import 'package:taobook/screens/booking_history_screen.dart';
 import 'package:taobook/screens/select_service_screen.dart';

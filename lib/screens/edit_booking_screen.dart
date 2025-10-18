@@ -227,7 +227,7 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     );
   }
 
-  // --- Card thông tin dịch vụ
+  // Thông tin dịch vụ
   Widget _infoCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -334,7 +334,6 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     );
   }
 
-  // --- Time Slots
   Widget _buildTimeSlots() {
     if (timeSlots.isEmpty) {
       return const Padding(
@@ -408,7 +407,6 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     );
   }
 
-  // --- Save Button
   Widget _buildSaveButton() {
     return Container(
       width: double.infinity,

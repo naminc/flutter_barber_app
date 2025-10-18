@@ -31,7 +31,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
         setState(() => services = data["data"]);
       }
     } catch (e) {
-      debugPrint("❌ Lỗi khi tải dịch vụ: $e");
+      debugPrint("Lỗi khi tải dịch vụ: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -70,7 +70,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
     );
   }
 
-  // --- Header gradient ---
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -88,8 +87,11 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.design_services_rounded,
-              color: Colors.white, size: 36),
+          const Icon(
+            Icons.design_services_rounded,
+            color: Colors.white,
+            size: 36,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -118,7 +120,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
     );
   }
 
-  // --- Card dịch vụ ---
   Widget _buildServiceCard(Map<String, dynamic> item) {
     final rating = double.tryParse(item['rating']?.toString() ?? "0") ?? 0.0;
 
@@ -173,13 +174,15 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
                   width: 85,
                   height: 85,
                   color: Colors.grey.shade300,
-                  child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  child: const Icon(
+                    Icons.image_not_supported,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 14),
 
-            // --- Nội dung ---
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +237,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
               ),
             ),
 
-            // --- Mũi tên ---
             const Padding(
               padding: EdgeInsets.only(left: 8, right: 6),
               child: Icon(
@@ -249,7 +251,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
     );
   }
 
-  // --- Animation xuất hiện mượt ---
   Widget _animatedCard({required int delay, required Widget child}) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),

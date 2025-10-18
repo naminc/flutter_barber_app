@@ -101,7 +101,6 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- Header gradient ---
                   _animatedCard(
                     delay: 0,
                     child: Container(
@@ -157,7 +156,6 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
 
                   const SizedBox(height: 28),
 
-                  // --- Cards dịch vụ / thợ / ngày ---
                   _animatedCard(
                     delay: 50,
                     child: _infoCard(
@@ -193,7 +191,6 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
 
                   const SizedBox(height: 12),
 
-                  // --- Chọn khung giờ ---
                   const Text(
                     "🕒 Chọn khung giờ phù hợp:",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -210,7 +207,6 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
     );
   }
 
-  // --- Danh sách khung giờ ---
   Widget _buildTimeSlots() {
     if (timeSlots.isEmpty) {
       return const Padding(
@@ -282,7 +278,6 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
     );
   }
 
-  // --- Nút xác nhận gradient ---
   Widget _buildConfirmButton() {
     return Container(
       width: double.infinity,
@@ -340,7 +335,6 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
     );
   }
 
-  // --- Card thông tin ---
   Widget _infoCard({
     required IconData icon,
     required Color iconColor,
@@ -423,16 +417,15 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
     );
   }
 
-  // --- Animation nhanh hơn ---
   Widget _animatedCard({required int delay, required Widget child}) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 250 + delay ~/ 2), // ⚡ nhanh gấp đôi
+      duration: Duration(milliseconds: 250 + delay ~/ 2),
       builder: (context, value, _) {
         return Opacity(
           opacity: value,
           child: Transform.translate(
-            offset: Offset(0, 15 * (1 - value)), // dịch chuyển ít => mượt hơn
+            offset: Offset(0, 15 * (1 - value)),
             child: child,
           ),
         );

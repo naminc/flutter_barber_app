@@ -23,7 +23,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     fetchBookings();
   }
 
-  /// ép kiểu an toàn
   int asInt(dynamic v, {int fallback = 0}) {
     if (v == null) return fallback;
     if (v is int) return v;
@@ -32,7 +31,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     return int.tryParse(s) ?? fallback;
   }
 
-  // 🟢 API: lấy danh sách lịch đặt của user
   Future<void> fetchBookings() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -65,7 +63,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     }
   }
 
-  // 🔴 API: Hủy lịch
   Future<void> cancelBooking(int bookingId) async {
     try {
       final prefs = await SharedPreferences.getInstance();

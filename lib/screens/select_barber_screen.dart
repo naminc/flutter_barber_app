@@ -37,7 +37,7 @@ class _SelectBarberScreenState extends State<SelectBarberScreen> {
         setState(() => barbers = data["data"]);
       }
     } catch (e) {
-      debugPrint("❌ Lỗi khi tải danh sách thợ: $e");
+      debugPrint("Lỗi khi tải danh sách thợ: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -94,7 +94,6 @@ class _SelectBarberScreenState extends State<SelectBarberScreen> {
     );
   }
 
-  // --- Header gradient ---
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -141,7 +140,6 @@ class _SelectBarberScreenState extends State<SelectBarberScreen> {
     );
   }
 
-  // --- Card thông tin thợ ---
   Widget _buildBarberCard(Map<String, dynamic> barber) {
     return GestureDetector(
       onTap: () {
@@ -256,16 +254,15 @@ class _SelectBarberScreenState extends State<SelectBarberScreen> {
     );
   }
 
-  // --- Animation nhanh gấp đôi ---
   Widget _animatedCard({required int delay, required Widget child}) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 220 + delay ~/ 2), // ⚡ nhanh hơn
+      duration: Duration(milliseconds: 220 + delay ~/ 2),
       builder: (context, value, _) {
         return Opacity(
           opacity: value,
           child: Transform.translate(
-            offset: Offset(0, 12 * (1 - value)), // nhỏ hơn => mượt
+            offset: Offset(0, 12 * (1 - value)),
             child: child,
           ),
         );

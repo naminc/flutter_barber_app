@@ -245,9 +245,9 @@ class _AccountScreenState extends State<AccountScreen> {
                         body: jsonEncode({'user_id': userId}),
                       );
 
-                      debugPrint("🧹 Remove token response: ${res.body}");
+                      debugPrint("Remove token response: ${res.body}");
                     } catch (e) {
-                      debugPrint("⚠️ Lỗi khi xóa FCM token: $e");
+                      debugPrint("Lỗi khi xóa FCM token: $e");
                     }
                   }
                   await prefs.clear();

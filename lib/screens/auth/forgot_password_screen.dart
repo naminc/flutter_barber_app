@@ -56,7 +56,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final mainColor = Colors.deepOrange.shade700;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -105,7 +104,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
               ElevatedButton.icon(
                 onPressed: isLoading ? null : resetPassword,
                 icon: isLoading
@@ -132,7 +130,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-
               TextButton(
                 onPressed: () {
                   Navigator.pushReplacement(

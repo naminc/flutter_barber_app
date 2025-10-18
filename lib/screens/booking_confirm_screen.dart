@@ -150,7 +150,6 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
             ),
             const SizedBox(height: 28),
 
-            // --- Thẻ thông tin ---
             _animatedCard(
               delay: 50,
               child: _infoCard(
@@ -242,7 +241,6 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     );
   }
 
-  // --- Thẻ thông tin dịch vụ / thợ / thời gian ---
   Widget _infoCard({
     required IconData icon,
     required Color iconColor,
@@ -322,16 +320,15 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
         child: const Icon(Icons.person, color: Colors.grey),
       );
 
-  // --- Hiệu ứng nhanh hơn ---
   Widget _animatedCard({required int delay, required Widget child}) {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 250 + delay ~/ 2), // nhanh gấp đôi
+      duration: Duration(milliseconds: 250 + delay ~/ 2),
       builder: (context, value, _) {
         return Opacity(
           opacity: value,
           child: Transform.translate(
-            offset: Offset(0, 15 * (1 - value)), // nhẹ & mượt hơn
+            offset: Offset(0, 15 * (1 - value)),
             child: child,
           ),
         );

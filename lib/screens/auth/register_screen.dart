@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:firebase_messaging/firebase_messaging.dart'; // 🟠 NEW
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../main_screen.dart';
 import 'login_screen.dart';
 
@@ -65,7 +65,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         await prefs.setString('user', jsonEncode(data['user']));
         await prefs.setString('token', data['user']['token']);
 
-        // 🟠 NEW: Lấy FCM token và lưu lên server
         final fcmToken = await FirebaseMessaging.instance.getToken();
         debugPrint("🔑 FCM Token (register): $fcmToken");
 
@@ -83,7 +82,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           debugPrint("📨 Save FCM response: ${res.body}");
         }
 
-        // 🟢 Chuyển sang màn hình chính
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
@@ -254,7 +252,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-
   InputDecoration _inputDecoration(
       Color mainColor, String label, IconData icon) {
     return InputDecoration(
